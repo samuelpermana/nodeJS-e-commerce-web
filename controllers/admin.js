@@ -14,7 +14,7 @@ const getAddProduct = (req, res) => {
     Products.fetchAll((products) => {
       res.render("admin/products", {
         pageTitle: "Admin Products",
-        path: "/products",
+        path: "/admin/products",
         prods: products,
       });
     });
