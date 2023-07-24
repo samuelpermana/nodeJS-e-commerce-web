@@ -1,3 +1,4 @@
+const Product = require("../models/products");
 const Products = require("../models/products");
 
 const getAddProduct = (req, res) => {
@@ -63,10 +64,16 @@ const getProducts = (req, res) => {
   });
 };
 
+const postDeleteProduct = (req, res) =>{
+  const productId = req.body.productId
+  Product.deleteById(productId)
+  res.redirect('/')
+}
 module.exports = {
   getAddProduct,
   postAddProduct,
   getProducts,
   getEditProduct,
   postEditProduct,
+  postDeleteProduct
 };
