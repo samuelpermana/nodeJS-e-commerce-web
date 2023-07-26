@@ -8,8 +8,10 @@ const adminData = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 
 const sequelize = require("./util/database");
-const Product = require('./models/products')
-const User = require('./models/user')
+const Product = require("./models/products");
+const User = require("./models/user");
+const Cart = require("./models/cart");
+const CartItem = require("./models/cart-item");
 
 const errorController = require("./controllers/error");
 
@@ -18,42 +20,50 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(rootDir, "public")));
 
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
   User.findByPk(1)
-  .then(user=>{
-    req.user = user
-    next()
-  })
-  .catch(err=>console.log(err))
-})
+    .then((user) => {
+      req.user = user;
+      next();
+    })
+    .catch((err) => console.log(err));
+});
 
 app.use("/admin", adminData.router);
 app.use("/", shopRoutes);
 
 app.use("/", errorController);
 
-Product.belongsTo(User,{
-  onDelete:'CASCADE',
-  constraints: true
-})
-User.hasMany(Product)
+Product.belongsTo(User, {
+  onDelete: "CASCADE",
+  constraints: true,
+});
+User.hasMany(Product);
+User.hasOne(Cart);
+Cart.belongsTo(User);
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
 
 sequelize
-// .sync({force:true})
-  .sync()
-  .then(result=>{
-    return User.findByPk(1)
-  }).then(user=>{
-    if (!user) {
-      return User.create({name:'Samuel Arya Permana', email:'permana@gmail.com'})
-    }
-    return user
-  }).then(user=>{
-    console.log(user)
-    app.listen(4000)
+  .sync({ force: true })
+  // .sync()
+  .then((result) => {
+    return User.findByPk(1);
   })
-  
-  .catch(err=>{
+  .then((user) => {
+    if (!user) {
+      return User.create({
+        name: "Samuel Arya Permana",
+        email: "permana@gmail.com",
+      });
+    }
+    return user;
+  })
+  .then((user) => {
+    console.log(user);
+    app.listen(4000);
+  })
+
+  .catch((err) => {
     console.log(err);
   });
-

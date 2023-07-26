@@ -32,8 +32,8 @@ const getProducts = (req, res) => {
 }
 
 const getProduct = (req, res) => {
-  const productId = req.params.productId;
-  Products.findByPk(productId)
+  const id = req.params.id;
+  Products.findByPk(id)
   .then((product) => {
     res.render("shop/product-detail", {
       pageTitle: product.title,
@@ -52,7 +52,7 @@ const getCart = (req, res) => {
       const cartProducts = [];
       for (const product of products) {
         const cartProductData = cart.products.find(
-          (prod) => prod.productId === product.productId
+          (prod) => prod.id === product.id
         );
         if (cartProductData) {
           cartProducts.push({ product, qty: cartProductData.qty });
@@ -67,9 +67,9 @@ const getCart = (req, res) => {
   });
 };
 const postCart = (req, res) => {
-  const productId = req.body.productId;
-  Products.findById(productId, (product) => {
-    Cart.addProduct(productId, product.price);
+  const id = req.body.id;
+  Products.findById(id, (product) => {
+    Cart.addProduct(id, product.price);
   });
   res.redirect("/cart");
 };
@@ -90,10 +90,10 @@ const getOrder = (req, res) => {
 };
 
 const postDeleteCart = (req, res) => {
-  const productId = req.body.productId;
+  const id = req.body.id;
 
-  Products.findById(productId, (product) => {
-    Cart.deleteProduct(productId, product.price);
+  Products.findById(id, (product) => {
+    Cart.deleteProduct(id, product.price);
     res.redirect("/");
   });
 };

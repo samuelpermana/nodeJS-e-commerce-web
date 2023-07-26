@@ -29,13 +29,13 @@ const postAddProduct = (req, res, next) => {
 };
 
 const getEditProduct = (req, res) => {
-  const productId = req.params.productId;
+  const id = req.params.id;
   const edit = req.query.edit;
   if (!edit) {
     return res.redirect("/");
   }
-  req.user.getProducts({where:{productId:productId}})
-  // Products.findByPk(productId)
+  req.user.getProducts({where:{id:id}})
+  // Products.findByPk(id)
     .then((product) => {
       product = product[0]
       if (!product) {
@@ -53,12 +53,12 @@ const getEditProduct = (req, res) => {
     });
 };
 const postEditProduct = (req, res, next) => {
-  const productId = req.body.productId;
+  const id = req.body.id;
   const updatedtitle = req.body.title;
   const updatedimageUrl = req.body.imageUrl;
   const updatedprice = req.body.price;
   const updateddescription = req.body.description;
-  Products.findByPk(productId)
+  Products.findByPk(id)
     .then((product) => {
       product.title = updatedtitle;
       product.price = updatedprice;
@@ -88,8 +88,8 @@ const getProducts = (req, res) => {
 };
 
 const postDeleteProduct = (req, res) => {
-  const productId = req.body.productId;
-  Products.findByPk(productId)
+  const id = req.body.id;
+  Products.findByPk(id)
     .then((product) => {
       return product.destroy();
     })
