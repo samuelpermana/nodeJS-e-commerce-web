@@ -83,15 +83,16 @@ const postCart = (req, res) => {
       if (product) {
         const oldQty = product.cartItem.qty;
         newQty = oldQty + 1;
+        res.redirect("/cart");
         return fetchedCart.addProduct(product, { through: { qty: newQty } });
       }
       return Products.findByPk(productId)
         .then((product) => {
           fetchedCart.addProduct(product, { through: { qty: newQty } });
+          res.redirect("/cart");
         })
         .catch((err) => console.log(err));
     })
-    .then(res.redirect("/cart"))
     .catch((err) => console.log(err));
 };
 
@@ -102,30 +103,62 @@ const getCheckout = (req, res) => {
     // prods: products,
   });
 };
+
+const postOrder = (req, res) => {
+  let fetchedCart;
+  req.user
+    .getCart()
+    .then((cart) => {
+      fetchedCart = cart;
+      return cart.getProducts();
+    })
+    .then((products) => {
+      return req.user
+        .createOrder()
+        .then((order) => {
+          return order.addProducts(
+            products.map((product) => {
+              product.orderItem = { qty: product.cartItem.qty };
+              return product;
+            })
+          );
+        })
+        .catch((err) => console.log(err));
+    })
+    .then((result) => {
+      return fetchedCart.setProducts(null);
+    })
+    .then((result) => {
+      res.redirect("/cart");
+    })
+    .catch((err) => console.log(err));
+};
 const getOrder = (req, res) => {
-  res.render("shop/orders", {
-    pageTitle: "Order",
-    path: "/orders",
-    // prods: products,
+  req.user.getOrders({ include: ["products"] }).then((orders) => {
+    res.render("shop/orders", {
+      pageTitle: "Order",
+      path: "/orders",
+      orders: orders,
+    });
   });
 };
 
 const postDeleteCart = (req, res) => {
   const productId = req.body.productId;
-  console.log(productId)
+  console.log(productId);
   req.user
     .getCart()
     .then((cart) => {
-      return cart.getProducts({ where: { id: productId } })
+      return cart.getProducts({ where: { id: productId } });
     })
-    .then(products=>{
-      const product = products[0]
-      return product.cartItem.destroy()
+    .then((products) => {
+      const product = products[0];
+      return product.cartItem.destroy();
     })
-    .then(result=>{
-      res.redirect('/cart')
+    .then((result) => {
+      res.redirect("/cart");
     })
-    .catch(err=>console.log(err));
+    .catch((err) => console.log(err));
 };
 
 module.exports = {
@@ -137,4 +170,5 @@ module.exports = {
   getProduct,
   postCart,
   postDeleteCart,
+  postOrder,
 };
