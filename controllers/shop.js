@@ -83,8 +83,7 @@ const postCart = (req, res) => {
       if (product) {
         const oldQty = product.cartItem.qty;
         newQty = oldQty + 1;
-        return fetchedCart.addProduct(product, { through: { qty: newQty } })
-        .then()
+        return fetchedCart.addProduct(product, { through: { qty: newQty } });
       }
       return Products.findByPk(productId)
         .then((product) => {
@@ -112,12 +111,21 @@ const getOrder = (req, res) => {
 };
 
 const postDeleteCart = (req, res) => {
-  const id = req.body.id;
-
-  Products.findById(id, (product) => {
-    Cart.deleteProduct(id, product.price);
-    res.redirect("/");
-  });
+  const productId = req.body.productId;
+  console.log(productId)
+  req.user
+    .getCart()
+    .then((cart) => {
+      return cart.getProducts({ where: { id: productId } })
+    })
+    .then(products=>{
+      const product = products[0]
+      return product.cartItem.destroy()
+    })
+    .then(result=>{
+      res.redirect('/cart')
+    })
+    .catch(err=>console.log(err));
 };
 
 module.exports = {
